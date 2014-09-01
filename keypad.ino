@@ -123,6 +123,10 @@ void blinkCursorOn() {
 	serCmd(0x0D);
 }
 
+void blinkCursorOff() {
+	serCmd(0x0C);
+}
+
 void serWrite(char c) {
 	Serial.write(c);
 	enteredKey = enteredKey + c;
@@ -131,6 +135,7 @@ void serWrite(char c) {
 void verifyKey() {
 
 	clearDisplay();
+	blinkCursorOff();
 
 	if (keyCode == enteredKey) {
 		Serial.write("AUTHORIZED");
@@ -139,6 +144,10 @@ void verifyKey() {
 	}
 
 	enteredKey = "";
+	delay(1500);
+	clearDisplay();
+	blinkCursorOn();
+
 }
 
 void serCmd(short cmd) {
