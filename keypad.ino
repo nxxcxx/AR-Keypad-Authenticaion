@@ -2,6 +2,7 @@
 #include <Keypad.h>
 
 const int LCDpin = 13;
+const int PIZOpin = 3;
 
 const byte ROWS = 4;
 const byte COLS = 4;
@@ -20,10 +21,10 @@ Keypad kpd = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 String keyCode = "4132";
 String enteredKey = "";
-// int rx = 0;
 
 void setup() {
 
+	pinMode(PIZOpin, OUTPUT);
 	pinMode(LCDpin, OUTPUT);
 	digitalWrite(LCDpin, HIGH);
 	Serial.begin(9600);
@@ -35,6 +36,7 @@ void setup() {
 	clearDisplay();
 	delay(100);
 	blinkCursorOn();
+	writeEnter();
 
 }
 
@@ -42,64 +44,35 @@ void loop() {
 
 	char key = kpd.getKey();
 	if(key) {
+
 		switch (key) {
-			case '1':
-				serWrite('1');
-				break;
-			case '2':
-				serWrite('2');
-				break;
-			case '3':
-				serWrite('3');
-				break;
-			case '4':
-				serWrite('4');
-				break;
-			case '5':
-				serWrite('5');
-				break;
-			case '6':
-				serWrite('6');
-				break;
-			case '7':
-				serWrite('7');
-				break;
-			case '8':
-				serWrite('8');
-				break;
-			case '9':
-				serWrite('9');
-				break;
-			case '0':
-				serWrite('0');
-				break;
 			case 'A':
 				verifyKey();
 				break;
+
 			case 'B':
-				blinkCursorOn();
 				break;
+
 			case 'C':
-				setBacklight();
 				break;
+
 			case 'D':
 				clearDisplay();
 				enteredKey = "";
+				writeEnter();
 				break;
-			case '#':
-				serWrite('#');
-				break;
-			case '*':
-				serWrite('*');
-				break;
+				
+			default:
+				serWrite("*");
+				enteredKey = enteredKey + key;
 		}
+
 	}
 
-	// if (Serial.available()) {
-	// 	rx = Serial.read();
-	// 	Serial.write(rx);
-	// }
+}
 
+void writeEnter() {
+	Serial.write("Enter> ");
 }
 
 void clearDisplay() {
@@ -127,9 +100,8 @@ void blinkCursorOff() {
 	serCmd(0x0C);
 }
 
-void serWrite(char c) {
+void serWrite(char* c) {
 	Serial.write(c);
-	enteredKey = enteredKey + c;
 }
 
 void verifyKey() {
@@ -138,15 +110,22 @@ void verifyKey() {
 	blinkCursorOff();
 
 	if (keyCode == enteredKey) {
-		Serial.write("AUTHORIZED");
+		serWrite("AUTHORIZED");
+		tone(PIZOpin, 3000, 35);
+		delay(100);
+		tone(PIZOpin, 3000, 35);
 	} else {
-		Serial.write("UNAUTHORIZED");
+		serWrite("UNAUTHORIZED");
+		tone(PIZOpin, 500, 35);
+		delay(100);
+		tone(PIZOpin, 500, 35);
 	}
 
 	enteredKey = "";
 	delay(1500);
 	clearDisplay();
 	blinkCursorOn();
+	writeEnter();
 
 }
 
